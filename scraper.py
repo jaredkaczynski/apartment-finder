@@ -4,14 +4,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean
 from sqlalchemy.orm import sessionmaker
 from dateutil.parser import parse
+
+from discord_helper import post_listing_to_discord
 from util import post_listing_to_slack, find_points_of_interest
-from slackclient import SlackClient
 import time
 import settings
 
 engine = create_engine('sqlite:///listings.db', echo=False)
 
 Base = declarative_base()
+
 
 class Listing(Base):
     """
@@ -33,10 +35,12 @@ class Listing(Base):
     area = Column(String)
     bart_stop = Column(String)
 
+
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
+
 
 def scrape_area(area):
     """
@@ -45,7 +49,8 @@ def scrape_area(area):
     :return: A list of results.
     """
     cl_h = CraigslistHousing(site=settings.CRAIGSLIST_SITE, area=area, category=settings.CRAIGSLIST_HOUSING_SECTION,
-                             filters={'max_price': settings.MAX_PRICE, "min_price": settings.MIN_PRICE})
+                             filters={'max_price': settings.MAX_PRICE, "min_price": settings.MIN_PRICE,
+                                      "has_image": True, "zip_code": "02148", "search_distance": 2})
 
     results = []
     gen = cl_h.get_results(sort_by='newest', geotagged=True, limit=20)
@@ -109,13 +114,14 @@ def scrape_area(area):
 
     return results
 
+
 def do_scrape():
     """
     Runs the craigslist scraper, and posts data to slack.
     """
 
     # Create a slack client.
-    sc = SlackClient(settings.SLACK_TOKEN)
+    # sc = SlackClient(settings.SLACK_TOKEN)
 
     # Get all the results from craigslist.
     all_results = []
@@ -124,6 +130,6 @@ def do_scrape():
 
     print("{}: Got {} results".format(time.ctime(), len(all_results)))
 
-    # Post each result to slack.
+    # Post each result to Discord.
     for result in all_results:
-        post_listing_to_slack(sc, result)
+        post_listing_to_discord(result)

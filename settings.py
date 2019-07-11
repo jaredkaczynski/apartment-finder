@@ -108,11 +108,13 @@ CRAIGSLIST_HOUSING_SECTION = 'apa'
 SLEEP_INTERVAL = 20 * 60 # 20 minutes
 
 # Which slack channel to post the listings into.
-SLACK_CHANNEL = "#housing"
+#SLACK_CHANNEL = "#housing"
+
+DISCORD_WEBHOOK_ADDRESS = "fakeurl"
 
 # The token that allows us to connect to slack.
 # Should be put in private.py, or set as an environment variable.
-SLACK_TOKEN = os.getenv('SLACK_TOKEN', "")
+#SLACK_TOKEN = os.getenv('SLACK_TOKEN', "")
 
 # Any private settings are imported here.
 try:

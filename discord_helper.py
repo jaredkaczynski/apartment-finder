@@ -1,3 +1,5 @@
+import json
+import urllib
 import requests
 
 import settings
@@ -9,8 +11,20 @@ def post_listing_to_discord(content):
         return
     payload = {
         "username": "Apartment Tracker",
-        "content": content
+        "embeds": [
+            {
+                "title": "Apartment in " + content["where"],
+                "url": content["url"],
+                "description": content["name"],
+                "fields": [
+                    {
+                        "name": "Price",
+                        "value":  content["price"]
+                    }
+                ],
+            }
+        ]
     }
     response = requests.post(
         settings.DISCORD_WEBHOOK_ADDRESS,
-        data=payload)
+        data=json.dumps(payload), headers={"Content-Type": "application/json"})
